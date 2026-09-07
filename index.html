@@ -194,10 +194,11 @@ updateClock();
 setInterval(updateClock, 1000);
 /* WEATHER TEST */
 
-document.getElementById("temperature").innerHTML = "16°C";
-document.getElementById("condition").innerHTML = "Clear";
-document.getElementById("high").innerHTML = "20°C";
-document.getElementById("low").innerHTML = "12°C";
+document.getElementById("temperature").innerHTML =
+    '<img src="https://wttr.in/Montreal?format=%t" style="height:1em;">';
+
+document.getElementById("condition").innerHTML =
+    '<img src="https://wttr.in/Montreal?format=%C" style="height:1em;">';
 </script>
 </body>
 </html>
