@@ -1,8 +1,12 @@
 <!DOCTYPE html>
 <html>
 <head>
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Desk Dashboard</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<!-- Make Home Screen version behave like an app on old iOS -->
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black">
+<meta name="apple-mobile-web-app-title" content="Desk Clock">
+<title>Desk Clock</title>
 <style>
 html, body {
     margin: 0;
@@ -10,7 +14,7 @@ html, body {
     width: 100%;
     height: 100%;
     background: #15171a;
-    color: #ffffff;
+    color: white;
     font-family: Arial, Helvetica, sans-serif;
     overflow: hidden;
 }
@@ -48,18 +52,21 @@ body {
     margin: 28px auto;
 }
 .weather-area {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    gap: 25px;
+    text-align: center;
 }
 .weather-icon {
-    font-size: 60px;
+    font-size: 52px;
+    display: inline-block;
+    vertical-align: middle;
+    margin-right: 15px;
+}
+.weather-info {
+    display: inline-block;
+    vertical-align: middle;
 }
 .location {
     font-size: 25px;
     letter-spacing: 3px;
-    margin-bottom: 4px;
 }
 .temperature {
     font-size: 48px;
@@ -71,12 +78,11 @@ body {
 }
 .forecast {
     margin-top: 25px;
-    display: flex;
-    justify-content: center;
-    gap: 15px;
 }
 .weather-card {
+    display: inline-block;
     padding: 10px 25px;
+    margin: 0 5px;
     border: 1px solid rgba(255,255,255,0.12);
     border-radius: 12px;
     background: rgba(255,255,255,0.04);
@@ -106,16 +112,16 @@ body {
 </div>
 <div class="divider"></div>
 <div class="weather-area">
-    <div class="weather-icon" id="weatherIcon">
-        ☀️
-    </div>
-    <div>
-        <div class="location">MONTRÉAL</div>
+    <span class="weather-icon" id="weatherIcon">☀</span>
+    <div class="weather-info">
+        <div class="location">
+            MONTRÉAL
+        </div>
         <div class="temperature">
             <span id="temperature">--</span>°C
         </div>
         <div class="conditions" id="conditions">
-            Weather loading...
+            Loading weather...
         </div>
     </div>
 </div>
@@ -134,6 +140,7 @@ body {
 </div>
 </div>
 <script>
+/* CLOCK */
 function updateClock() {
     var now = new Date();
     var hours = now.getHours();
@@ -149,16 +156,18 @@ function updateClock() {
     document.getElementById("time").innerHTML =
         hours + ":" + minutes + " " + ampm;
     var hour = now.getHours();
-    var greeting;
     if (hour < 12) {
-        greeting = "Good morning";
-    } else if (hour < 18) {
-        greeting = "Good afternoon";
-    } else {
-        greeting = "Good evening";
+        document.getElementById("greeting").innerHTML =
+            "Good morning";
     }
-    document.getElementById("greeting").innerHTML =
-        greeting;
+    else if (hour < 18) {
+        document.getElementById("greeting").innerHTML =
+            "Good afternoon";
+    }
+    else {
+        document.getElementById("greeting").innerHTML =
+            "Good evening";
+    }
     var days = [
         "Sunday",
         "Monday",
@@ -187,74 +196,52 @@ function updateClock() {
         months[now.getMonth()] + " " +
         now.getDate();
 }
+/* WEATHER */
 function getWeather() {
     var url =
         "https://api.open-meteo.com/v1/forecast" +
         "?latitude=45.5017" +
         "&longitude=-73.5673" +
         "&current_weather=true" +
-        "&daily=temperature_2m_max,temperature_2m_min,weathercode" +
+        "&daily=temperature_2m_max,temperature_2m_min" +
         "&timezone=America%2FToronto";
     var request = new XMLHttpRequest();
     request.open("GET", url, true);
     request.onreadystatechange = function() {
-        if (request.readyState === 4 &&
-            request.status === 200) {
-            var data = JSON.parse(request.responseText);
-            var temp =
-                Math.round(
-                    data.current_weather.temperature
-                );
-            var high =
-                Math.round(
-                    data.daily.temperature_2m_max[0]
-                );
-            var low =
-                Math.round(
-                    data.daily.temperature_2m_min[0]
-                );
-            var code =
-                data.current_weather.weathercode;
-            document.getElementById("temperature").innerHTML =
-                temp;
-            document.getElementById("high").innerHTML =
-                high;
-            document.getElementById("low").innerHTML =
-                low;
-            var icon = "☀️";
-            var description = "Clear";
-            if (code >= 1 && code <= 3) {
-                icon = "⛅";
-                description = "Partly cloudy";
+        if (request.readyState == 4) {
+            if (request.status == 200) {
+                try {
+                    var data =
+                        JSON.parse(request.responseText);
+                    document.getElementById("temperature").innerHTML =
+                        Math.round(
+                            data.current_weather.temperature
+                        );
+                    document.getElementById("high").innerHTML =
+                        Math.round(
+                            data.daily.temperature_2m_max[0]
+                        );
+                    document.getElementById("low").innerHTML =
+                        Math.round(
+                            data.daily.temperature_2m_min[0]
+                        );
+                    document.getElementById("conditions").innerHTML =
+                        "Current conditions";
+                }
+                catch(e) {
+                    document.getElementById("conditions").innerHTML =
+                        "Weather unavailable";
+                }
             }
-            if (code >= 45 && code <= 48) {
-                icon = "🌫️";
-                description = "Foggy";
+            else {
+                document.getElementById("conditions").innerHTML =
+                    "Weather unavailable";
             }
-            if (code >= 51 && code <= 67) {
-                icon = "🌧️";
-                description = "Rain";
-            }
-            if (code >= 71 && code <= 77) {
-                icon = "❄️";
-                description = "Snow";
-            }
-            if (code >= 80 && code <= 82) {
-                icon = "🌦️";
-                description = "Showers";
-            }
-            if (code >= 95) {
-                icon = "⛈️";
-                description = "Thunderstorm";
-            }
-            document.getElementById("weatherIcon").innerHTML =
-                icon;
-            document.getElementById("conditions").innerHTML =
-                description;
         }
     };
-    request.send();
+    request.send(null);
 }
+/* START */
 updateClock();
 setInterval(updateClock, 1000);
 getWeather();
