@@ -193,82 +193,76 @@ function updateClock() {
 updateClock();
 setInterval(updateClock, 1000);
 /* WEATHER */
+
 function loadWeather() {
-    var url =
-        "https://api.open-meteo.com/v1/forecast" +
-        "?latitude=45.5017" +
-        "&longitude=-73.5673" +
-        "&current_weather=true" +
-        "&daily=temperature_2m_max,temperature_2m_min" +
-        "&timezone=GMT";
-    var request = new XMLHttpRequest();
-    request.open("GET", url, true);
-    request.onreadystatechange = function() {
-        if (request.readyState !== 4) {
+
+    var tempRequest = new XMLHttpRequest();
+
+    tempRequest.open(
+        "GET",
+        "https://wttr.in/Montreal?format=%t",
+        true
+    );
+
+    tempRequest.onreadystatechange = function() {
+
+        if (tempRequest.readyState !== 4) {
             return;
         }
-        if (request.status === 200) {
-            try {
-                var data = JSON.parse(request.responseText);
-                var current = data.current_weather;
-                if (current) {
-                    document.getElementById("temperature").innerHTML =
-                        Math.round(current.temperature) + "°C";
-                    document.getElementById("condition").innerHTML =
-                        weatherDescription(current.weathercode);
-                    document.getElementById("weatherIcon").innerHTML =
-                        weatherIcon(current.weathercode);
-                }
-                if (data.daily) {
-                    if (data.daily.temperature_2m_max) {
-                        document.getElementById("high").innerHTML =
-                            Math.round(data.daily.temperature_2m_max[0]) + "°C";
-                    }
-                    if (data.daily.temperature_2m_min) {
-                        document.getElementById("low").innerHTML =
-                            Math.round(data.daily.temperature_2m_min[0]) + "°C";
-                    }
-                }
-            } catch (e) {
-                document.getElementById("condition").innerHTML =
-                    "Weather unavailable";
-            }
+
+        if (tempRequest.status === 200) {
+
+            var temp = tempRequest.responseText;
+
+            document.getElementById("temperature").innerHTML = temp;
+            document.getElementById("condition").innerHTML = "Current weather";
+
         } else {
+
             document.getElementById("condition").innerHTML =
                 "Weather unavailable";
         }
     };
-    request.onerror = function() {
+
+    tempRequest.onerror = function() {
+
         document.getElementById("condition").innerHTML =
             "Weather unavailable";
     };
-    request.send(null);
+
+    tempRequest.send(null);
 }
-function weatherDescription(code) {
-    if (code === 0) return "Clear sky";
-    if (code === 1) return "Mainly clear";
-    if (code === 2) return "Partly cloudy";
-    if (code === 3) return "Overcast";
-    if (code === 45 || code === 48) return "Fog";
-    if (code >= 51 && code <= 57) return "Drizzle";
-    if (code >= 61 && code <= 67) return "Rain";
-    if (code >= 71 && code <= 77) return "Snow";
-    if (code >= 80 && code <= 82) return "Rain showers";
-    if (code >= 85 && code <= 86) return "Snow showers";
-    if (code >= 95) return "Thunderstorm";
-    return "Weather";
+
+
+function loadCondition() {
+
+    var conditionRequest = new XMLHttpRequest();
+
+    conditionRequest.open(
+        "GET",
+        "https://wttr.in/Montreal?format=%C",
+        true
+    );
+
+    conditionRequest.onreadystatechange = function() {
+
+        if (conditionRequest.readyState !== 4) {
+            return;
+        }
+
+        if (conditionRequest.status === 200) {
+
+            document.getElementById("condition").innerHTML =
+                conditionRequest.responseText;
+        }
+    };
+
+    conditionRequest.send(null);
 }
-function weatherIcon(code) {
-    if (code === 0) return "☀";
-    if (code === 1 || code === 2) return "⛅";
-    if (code === 3) return "☁";
-    if (code === 45 || code === 48) return "🌫";
-    if (code >= 51 && code <= 67) return "🌧";
-    if (code >= 71 && code <= 86) return "❄";
-    if (code >= 95) return "⛈";
-    return "☁";
-}
+
+
 loadWeather();
+loadCondition();
 </script>
 </body>
 </html>
