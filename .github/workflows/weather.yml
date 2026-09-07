@@ -1,0 +1,53 @@
+name: Update Montreal Weather
+
+on:
+  schedule:
+    - cron: "*/15 * * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  update-weather:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Get dashboard files
+        uses: actions/checkout@v4
+
+      - name: Get weather
+        run: |
+          curl -L "https://wttr.in/Montreal?format=j1" -o weather.json
+
+      - name: Save weather data
+        run: |
+          python3 - <<'PY'
+          import json
+
+          with open("weather.json", "r") as f:
+              data = json.load(f)
+
+          today = data["weather"][0]
+          current = data["current_condition"][0]
+
+          output = {
+              "temperature": current["temp_C"],
+              "condition": current["weatherDesc"][0]["value"],
+              "high": today["maxtempC"],
+              "low": today["mintempC"]
+          }
+
+          with open("weather-data.json", "w") as f:
+              json.dump(output, f)
+          PY
+
+          rm weather.json
+
+      - name: Publish weather data
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add weather-data.json
+          git commit -m "Update weather" || exit 0
+          git push
