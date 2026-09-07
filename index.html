@@ -192,12 +192,50 @@ function updateClock() {
 }
 updateClock();
 setInterval(updateClock, 1000);
-/* WEATHER TEST */
+/* WEATHER */
 
-document.getElementById("temperature").innerHTML = "16°C";
-document.getElementById("condition").innerHTML = "Clear";
-document.getElementById("high").innerHTML = "20°C";
-document.getElementById("low").innerHTML = "12°C";
+function loadWeather() {
+
+    var request = new XMLHttpRequest();
+
+    request.open("GET", "weather-data.json", true);
+
+    request.onreadystatechange = function() {
+
+        if (request.readyState !== 4) return;
+
+        if (request.status === 200) {
+
+            try {
+
+                var data = JSON.parse(request.responseText);
+
+                document.getElementById("temperature").innerHTML =
+                    data.temperature + "°C";
+
+                document.getElementById("condition").innerHTML =
+                    data.condition;
+
+                document.getElementById("high").innerHTML =
+                    data.high + "°C";
+
+                document.getElementById("low").innerHTML =
+                    data.low + "°C";
+
+            } catch (e) {
+
+                document.getElementById("temperature").innerHTML = "--°";
+                document.getElementById("condition").innerHTML = "Weather unavailable";
+                document.getElementById("high").innerHTML = "--°";
+                document.getElementById("low").innerHTML = "--°";
+            }
+        }
+    };
+
+    request.send(null);
+}
+
+loadWeather();
 </script>
 </body>
 </html>
