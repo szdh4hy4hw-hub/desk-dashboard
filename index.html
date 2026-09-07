@@ -196,6 +196,7 @@ setInterval(updateClock, 1000);
 
 function loadWeather() {
 
+    /* Current temperature */
     var tempRequest = new XMLHttpRequest();
 
     tempRequest.open(
@@ -206,36 +207,18 @@ function loadWeather() {
 
     tempRequest.onreadystatechange = function() {
 
-        if (tempRequest.readyState !== 4) {
-            return;
-        }
+        if (tempRequest.readyState !== 4) return;
 
         if (tempRequest.status === 200) {
-
-            var temp = tempRequest.responseText;
-
-            document.getElementById("temperature").innerHTML = temp;
-            document.getElementById("condition").innerHTML = "Current weather";
-
-        } else {
-
-            document.getElementById("condition").innerHTML =
-                "Weather unavailable";
+            document.getElementById("temperature").innerHTML =
+                tempRequest.responseText;
         }
-    };
-
-    tempRequest.onerror = function() {
-
-        document.getElementById("condition").innerHTML =
-            "Weather unavailable";
     };
 
     tempRequest.send(null);
-}
 
 
-function loadCondition() {
-
+    /* Weather condition */
     var conditionRequest = new XMLHttpRequest();
 
     conditionRequest.open(
@@ -246,23 +229,58 @@ function loadCondition() {
 
     conditionRequest.onreadystatechange = function() {
 
-        if (conditionRequest.readyState !== 4) {
-            return;
-        }
+        if (conditionRequest.readyState !== 4) return;
 
         if (conditionRequest.status === 200) {
-
             document.getElementById("condition").innerHTML =
                 conditionRequest.responseText;
         }
     };
 
     conditionRequest.send(null);
+
+
+    /* Today's high and low */
+    var forecastRequest = new XMLHttpRequest();
+
+    forecastRequest.open(
+        "GET",
+        "https://wttr.in/Montreal?format=j1",
+        true
+    );
+
+    forecastRequest.onreadystatechange = function() {
+
+        if (forecastRequest.readyState !== 4) return;
+
+        if (forecastRequest.status === 200) {
+
+            try {
+
+                var data = JSON.parse(
+                    forecastRequest.responseText
+                );
+
+                var today = data.weather[0];
+
+                document.getElementById("high").innerHTML =
+                    today.maxtempC + "°C";
+
+                document.getElementById("low").innerHTML =
+                    today.mintempC + "°C";
+
+            } catch (e) {
+
+                document.getElementById("high").innerHTML = "--°";
+                document.getElementById("low").innerHTML = "--°";
+            }
+        }
+    };
+
+    forecastRequest.send(null);
 }
 
-
 loadWeather();
-loadCondition();
 </script>
 </body>
 </html>
